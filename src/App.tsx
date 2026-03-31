@@ -34,6 +34,9 @@ import {
   LogIn,
   Download,
   Phone,
+  AlertCircle,
+  Key,
+  Github,
 } from "lucide-react";
 import { motion, AnimatePresence, useScroll, useTransform } from "motion/react";
 import ReactMarkdown from "react-markdown";
@@ -123,6 +126,7 @@ export default function App() {
     { role: "user" | "ai"; content: string; image?: string }[]
   >([]);
   const [isTyping, setIsTyping] = useState(false);
+  const [quotaExceeded, setQuotaExceeded] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [weather, setWeather] = useState<{
     temp: number;
@@ -192,9 +196,7 @@ export default function App() {
         const res = await fetch(
           `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto`,
         );
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         const data = await res.json();
         if (data && data.current) {
           const forecast = data.daily
@@ -253,6 +255,29 @@ export default function App() {
     }
   }, []);
 
+  const filteredData = FARMING_DATA.filter((item) => {
+    const matchesCategory =
+      activeCategory === "all" || item.category === activeCategory;
+    const matchesSearch =
+      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.tags.some((tag) =>
+        tag.toLowerCase().includes(searchQuery.toLowerCase()),
+      );
+    return matchesCategory && matchesSearch;
+  });
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSelectedImage(reader.result as string);
+        setIsChatOpen(true);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!chatInput.trim() && !selectedImage) return;
@@ -282,8 +307,51 @@ export default function App() {
       imageBase64,
       mimeType,
     );
-    setChatMessages((prev) => [...prev, { role: "ai", content: aiResponse }]);
+
+    if (aiResponse === "QUOTA_EXCEEDED") {
+      setQuotaExceeded(true);
+      setChatMessages((prev) => [
+        ...prev,
+        {
+          role: "ai",
+          content: t.quotaExceededDesc,
+        },
+      ]);
+    } else {
+      setChatMessages((prev) => [...prev, { role: "ai", content: aiResponse }]);
+    }
+
     setIsTyping(false);
+  };
+
+  const handleSelectKey = async () => {
+    try {
+      await window.aistudio.openSelectKey();
+      setQuotaExceeded(false);
+      setChatMessages((prev) => [
+        ...prev,
+        { role: "ai", content: t.apiKeySelected },
+      ]);
+    } catch (error) {
+      console.error("Error selecting API key:", error);
+    }
+  };
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatMessages]);
+
+  const handleDownloadGuide = (item: FarmingItem) => {
+    if (!item.guideContent) return;
+    const blob = new Blob([item.guideContent], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${item.title.toLowerCase().replace(/\s+/g, "-")}-technical-guide.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -311,11 +379,7 @@ export default function App() {
             <div className="hidden md:flex items-center gap-8">
               <Link
                 to="/"
-                className={`text-sm font-bold uppercase tracking-widest transition-all relative py-2 ${
-                  location.pathname === "/"
-                    ? "text-olive-600"
-                    : "text-olive-900/40 hover:text-olive-900"
-                }`}
+                className={`text-sm font-bold uppercase tracking-widest transition-all relative py-2 ${location.pathname === "/" ? "text-olive-600" : "text-olive-900/40 hover:text-olive-900"}`}
               >
                 {t.navHome}
                 {location.pathname === "/" && (
@@ -327,11 +391,7 @@ export default function App() {
               </Link>
               <Link
                 to="/market"
-                className={`text-sm font-bold uppercase tracking-widest transition-all relative py-2 ${
-                  location.pathname === "/market"
-                    ? "text-olive-600"
-                    : "text-olive-900/40 hover:text-olive-900"
-                }`}
+                className={`text-sm font-bold uppercase tracking-widest transition-all relative py-2 ${location.pathname === "/market" ? "text-olive-600" : "text-olive-900/40 hover:text-olive-900"}`}
               >
                 {t.navMarket}
                 {location.pathname === "/market" && (
@@ -343,11 +403,7 @@ export default function App() {
               </Link>
               <Link
                 to="/forum"
-                className={`text-sm font-bold uppercase tracking-widest transition-all relative py-2 ${
-                  location.pathname === "/forum"
-                    ? "text-olive-600"
-                    : "text-olive-900/40 hover:text-olive-900"
-                }`}
+                className={`text-sm font-bold uppercase tracking-widest transition-all relative py-2 ${location.pathname === "/forum" ? "text-olive-600" : "text-olive-900/40 hover:text-olive-900"}`}
               >
                 {t.navForum}
                 {location.pathname === "/forum" && (
@@ -359,11 +415,7 @@ export default function App() {
               </Link>
               <Link
                 to="/chat"
-                className={`text-sm font-bold uppercase tracking-widest transition-all relative py-2 ${
-                  location.pathname === "/chat"
-                    ? "text-olive-600"
-                    : "text-olive-900/40 hover:text-olive-900"
-                }`}
+                className={`text-sm font-bold uppercase tracking-widest transition-all relative py-2 ${location.pathname === "/chat" ? "text-olive-600" : "text-olive-900/40 hover:text-olive-900"}`}
               >
                 {t.navExpert}
                 {location.pathname === "/chat" && (
@@ -422,15 +474,21 @@ export default function App() {
                   <button
                     key={l}
                     onClick={() => setLang(l)}
-                    className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all ${
-                      lang === l
-                        ? "bg-white text-olive-900 shadow-sm"
-                        : "text-olive-400 hover:text-olive-900"
-                    }`}
+                    className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all ${lang === l ? "bg-white text-olive-900 shadow-sm" : "text-olive-400 hover:text-olive-900"}`}
                   >
                     {l === "tn" ? "Tounsi" : l}
                   </button>
                 ))}
+              </div>
+              <div className="relative hidden lg:block">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-olive-400" />
+                <input
+                  type="text"
+                  placeholder={t.chatPlaceholder}
+                  className="pl-10 pr-4 py-2 bg-earth-100 border-none rounded-full text-sm focus:ring-2 focus:ring-olive-500 transition-all w-48 lg:w-64"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
               </div>
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -485,6 +543,45 @@ export default function App() {
                   >
                     {t.navExpert}
                   </Link>
+                  {user && (
+                    <Link
+                      to="/profile"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="text-lg font-bold text-olive-900 px-4 py-2 hover:bg-earth-50 rounded-xl transition-colors flex items-center gap-3"
+                    >
+                      <User className="w-5 h-5" />
+                      {t.forumProfile}
+                    </Link>
+                  )}
+                </div>
+                <div className="px-4">
+                  <div className="text-xs font-bold uppercase tracking-widest text-olive-400 mb-4">
+                    Language / Langue / اللغة
+                  </div>
+                  <div className="flex items-center bg-earth-100 rounded-2xl p-1.5 w-fit">
+                    {(["en", "fr", "tn"] as const).map((l) => (
+                      <button
+                        key={l}
+                        onClick={() => {
+                          setLang(l);
+                          setIsMobileMenuOpen(false);
+                        }}
+                        className={`px-6 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${lang === l ? "bg-white text-olive-900 shadow-sm" : "text-olive-400 hover:text-olive-900"}`}
+                      >
+                        {l === "tn" ? "Tounsi" : l}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="px-4 relative">
+                  <Search className="absolute left-7 top-1/2 -translate-y-1/2 w-4 h-4 text-olive-400" />
+                  <input
+                    type="text"
+                    placeholder={t.chatPlaceholder}
+                    className="pl-12 pr-4 py-4 bg-earth-100 border-none rounded-2xl text-sm focus:ring-2 focus:ring-olive-500 transition-all w-full"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
                 </div>
               </div>
             </motion.div>
@@ -527,6 +624,9 @@ export default function App() {
                 fileInputRef={fileInputRef}
                 uploadInputRef={uploadInputRef}
                 chatEndRef={chatEndRef}
+                quotaExceeded={quotaExceeded}
+                setQuotaExceeded={setQuotaExceeded}
+                handleSelectKey={handleSelectKey}
               />
             }
           />
@@ -556,43 +656,598 @@ export default function App() {
         </Routes>
       </main>
 
-      {/* Fixed Chat Button */}
-      <Link
-        to="/chat"
-        className="fixed bottom-8 right-8 w-16 h-16 bg-olive-900 text-white rounded-2xl shadow-2xl flex items-center justify-center hover:bg-olive-800 transition-all hover:scale-110 active:scale-95 z-[9999] group"
-      >
-        <MessageSquare className="w-8 h-8" />
-        <span className="absolute right-full mr-4 px-4 py-2 bg-olive-900 text-white text-[10px] font-bold uppercase tracking-widest rounded-xl opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-          {t.navExpert}
-        </span>
-      </Link>
-
       {/* Footer */}
-      <footer className="bg-earth-100 py-20 border-t border-earth-200">
+      <footer className="bg-earth-100 py-24 border-t border-earth-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-4 gap-12 mb-16">
-            <div className="col-span-2">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-olive-600 rounded-xl flex items-center justify-center text-white">
-                  <Leaf className="w-6 h-6" />
+          <div className="grid md:grid-cols-4 gap-16 mb-20">
+            <div className="space-y-8">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-olive-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-olive-100">
+                  <Leaf className="w-7 h-7" />
                 </div>
-                <span className="text-2xl font-serif font-bold text-olive-900">
+                <span className="text-2xl font-serif font-bold text-olive-900 tracking-tight">
                   Great Farming
                 </span>
               </div>
-              <p className="text-olive-800/60 max-w-sm leading-relaxed">
-                Empowering the next generation of Tunisian farmers with
-                data-driven insights and sustainable practices.
+              <p className="text-olive-800/60 leading-relaxed text-sm">
+                {t.footerAbout}
               </p>
+              <div className="pt-4 border-t border-olive-100">
+                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-olive-400 block mb-2">
+                  {t.footerDevelopedBy}
+                </span>
+                <a
+                  href="https://github.com/Youssef-benamor"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm font-bold text-olive-900 hover:text-olive-600 transition-colors flex items-center gap-2 group"
+                >
+                  <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-sm group-hover:shadow-md transition-all">
+                    <Github className="w-4 h-4 text-olive-600" />
+                  </div>
+                  Youssef Benamor Dev
+                </a>
+              </div>
+            </div>
+
+            <div className="col-span-2">
+              <h5 className="text-[10px] font-bold uppercase tracking-[0.2em] text-olive-400 mb-8">
+                {t.footerLocations}
+              </h5>
+              <div className="grid sm:grid-cols-2 gap-8">
+                <a
+                  href="https://maps.app.goo.gl/RCnwYEDMC4a9itXSA"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-start gap-4 group"
+                >
+                  <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm group-hover:shadow-md transition-all flex-shrink-0">
+                    <MapPin className="w-5 h-5 text-olive-600" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-bold text-olive-900 group-hover:text-olive-600 transition-colors">
+                      Great Farming Somaa
+                    </div>
+                    <div className="text-[10px] text-olive-400 font-medium mt-1">
+                      Somaa, Nabeul, Tunisia
+                    </div>
+                  </div>
+                </a>
+                <a
+                  href="https://maps.app.goo.gl/sF3j2AkY2sJPJTgj9"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-start gap-4 group"
+                >
+                  <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm group-hover:shadow-md transition-all flex-shrink-0">
+                    <MapPin className="w-5 h-5 text-olive-600" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-bold text-olive-900 group-hover:text-olive-600 transition-colors">
+                      Great Farming Boujrida
+                    </div>
+                    <div className="text-[10px] text-olive-400 font-medium mt-1">
+                      Boujrida, Nabeul, Tunisia
+                    </div>
+                  </div>
+                </a>
+              </div>
+              <div className="mt-12 pt-8 border-t border-olive-100">
+                <div className="flex flex-wrap gap-12">
+                  <a
+                    href="tel:+21629793853"
+                    className="flex items-center gap-4 group"
+                  >
+                    <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm group-hover:shadow-md transition-all">
+                      <Phone className="w-6 h-6 text-olive-600" />
+                    </div>
+                    <div>
+                      <div className="text-[10px] font-bold uppercase tracking-widest text-olive-400 mb-1">
+                        {t.footerContact}
+                      </div>
+                      <div className="text-sm font-bold text-olive-900 group-hover:text-olive-600 transition-colors">
+                        +216 29 793 853
+                      </div>
+                    </div>
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h5 className="text-[10px] font-bold uppercase tracking-[0.2em] text-olive-400 mb-8">
+                {t.footerExplore}
+              </h5>
+              <ul className="space-y-4">
+                <li>
+                  <Link
+                    to="/"
+                    className="text-sm font-bold text-olive-900/60 hover:text-olive-900 transition-colors"
+                  >
+                    {t.navHome}
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/market"
+                    className="text-sm font-bold text-olive-900/60 hover:text-olive-900 transition-colors"
+                  >
+                    {t.navMarket}
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/chat"
+                    className="text-sm font-bold text-olive-900/60 hover:text-olive-900 transition-colors"
+                  >
+                    {t.navExpert}
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/forum"
+                    className="text-sm font-bold text-olive-900/60 hover:text-olive-900 transition-colors"
+                  >
+                    {t.navForum}
+                  </Link>
+                </li>
+              </ul>
+              <div className="mt-8">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => {
+                    setIsChatOpen(true);
+                    setChatInput(
+                      lang === "tn"
+                        ? "نحب نحجز استشارة فلاحية."
+                        : lang === "fr"
+                          ? "Je souhaite réserver une consultation agricole."
+                          : "I would like to book an agricultural consulting session.",
+                    );
+                  }}
+                  className="w-full py-4 bg-olive-900 text-white rounded-2xl font-bold text-xs uppercase tracking-widest shadow-xl shadow-olive-100 hover:bg-olive-800 transition-all"
+                >
+                  {lang === "tn"
+                    ? "حجز استشارة"
+                    : lang === "fr"
+                      ? "Réserver une Consultation"
+                      : "Book a Consulting"}
+                </motion.button>
+              </div>
             </div>
           </div>
-          <div className="pt-8 border-t border-earth-200">
-            <p className="text-xs font-bold text-olive-800/40 uppercase tracking-widest">
-              © 2026 Great Farming. All rights reserved.
-            </p>
+
+          <div className="flex flex-col md:flex-row justify-between items-center pt-12 border-t border-earth-200 gap-8">
+            <div className="flex flex-col gap-2">
+              <p className="text-[10px] font-bold text-olive-800/30 uppercase tracking-[0.3em]">
+                © 2026 Great Farming. All rights reserved.
+              </p>
+              <p className="text-[10px] font-bold text-olive-800/20 uppercase tracking-[0.2em]">
+                Developed by Youssef Benamor Dev
+              </p>
+            </div>
+            <div className="flex gap-8">
+              <a
+                href="#"
+                className="text-[10px] font-bold text-olive-800/30 uppercase tracking-[0.2em] hover:text-olive-600 transition-colors"
+              >
+                Privacy Policy
+              </a>
+              <a
+                href="#"
+                className="text-[10px] font-bold text-olive-800/30 uppercase tracking-[0.2em] hover:text-olive-600 transition-colors"
+              >
+                Terms of Service
+              </a>
+            </div>
           </div>
         </div>
       </footer>
+
+      {/* Item Modal */}
+      <AnimatePresence>
+        {selectedItem && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 lg:p-8">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedItem(null)}
+              className="absolute inset-0 bg-olive-900/80 backdrop-blur-md"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 40 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 40 }}
+              className="relative bg-white rounded-[48px] overflow-hidden max-w-6xl w-full max-h-[90vh] shadow-2xl flex flex-col lg:flex-row"
+            >
+              <div className="lg:w-1/2 h-80 lg:h-auto relative">
+                <img
+                  src={selectedItem.image}
+                  alt={selectedItem.title}
+                  className="w-full h-full object-cover"
+                  referrerPolicy="no-referrer"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent lg:hidden" />
+                <button
+                  onClick={() => setSelectedItem(null)}
+                  className="absolute top-6 left-6 p-3 glass rounded-full text-white hover:bg-white/40 transition-all lg:hidden"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+              <div className="lg:w-1/2 p-10 lg:p-16 overflow-y-auto custom-scrollbar">
+                <div className="hidden lg:flex justify-end mb-8">
+                  <button
+                    onClick={() => setSelectedItem(null)}
+                    className="p-3 text-olive-300 hover:text-olive-900 transition-colors"
+                  >
+                    <X className="w-8 h-8" />
+                  </button>
+                </div>
+                <div className="flex items-center gap-4 mb-8">
+                  <div className="glass px-4 py-2 rounded-2xl flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-olive-900">
+                    <CategoryIcon category={selectedItem.category} />
+                    {selectedItem.category}
+                  </div>
+                  <Badge
+                    variant={
+                      selectedItem.difficulty === "Advanced"
+                        ? "warning"
+                        : "default"
+                    }
+                  >
+                    {selectedItem.difficulty}
+                  </Badge>
+                </div>
+                <h2 className="text-5xl lg:text-6xl font-serif font-bold text-olive-900 mb-8 leading-tight">
+                  {selectedItem.title}
+                </h2>
+                <div className="grid grid-cols-2 gap-8 mb-12">
+                  <div className="bg-earth-50 p-6 rounded-3xl">
+                    <Calendar className="w-6 h-6 text-olive-600 mb-3" />
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-olive-400 mb-1">
+                      {lang === "tn"
+                        ? "أحسن وقت"
+                        : lang === "fr"
+                          ? "Meilleure Saison"
+                          : "Best Season"}
+                    </div>
+                    <div className="text-lg font-serif font-bold text-olive-900">
+                      {selectedItem.season ||
+                        (lang === "tn"
+                          ? "على طول العام"
+                          : lang === "fr"
+                            ? "Toute l'année"
+                            : "Year-round")}
+                    </div>
+                  </div>
+                  <div className="bg-earth-50 p-6 rounded-3xl">
+                    <Zap className="w-6 h-6 text-olive-600 mb-3" />
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-olive-400 mb-1">
+                      {t.impact}
+                    </div>
+                    <div className="text-lg font-serif font-bold text-olive-900">
+                      {lang === "tn"
+                        ? "النجاعة"
+                        : lang === "fr"
+                          ? "Efficacité"
+                          : "Efficiency"}
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-10">
+                  <section>
+                    <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-olive-400 mb-4">
+                      {t.expertOverview}
+                    </h4>
+                    <p className="text-xl text-olive-800/70 leading-relaxed font-serif italic">
+                      "{selectedItem.description}"
+                    </p>
+                  </section>
+                  <section>
+                    <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-olive-400 mb-4">
+                      {t.techImplementation}
+                    </h4>
+                    <p className="text-lg text-olive-800/70 leading-relaxed">
+                      {selectedItem.details}
+                    </p>
+                  </section>
+                  <section className="bg-olive-50 p-8 rounded-[32px] border border-olive-100">
+                    <div className="flex items-start gap-4">
+                      <ShieldCheck className="w-8 h-8 text-olive-600 flex-shrink-0" />
+                      <div>
+                        <h4 className="text-lg font-serif font-bold text-olive-900 mb-2">
+                          {t.projectedImpact}
+                        </h4>
+                        <p className="text-olive-800/70 leading-relaxed">
+                          {selectedItem.impact}
+                        </p>
+                      </div>
+                    </div>
+                  </section>
+                </div>
+                <div className="mt-16 flex flex-col sm:flex-row gap-4">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => handleDownloadGuide(selectedItem)}
+                    className="flex-grow py-5 bg-olive-900 text-white rounded-[24px] font-bold shadow-2xl shadow-olive-200 hover:bg-olive-800 transition-all"
+                  >
+                    {lang === "tn"
+                      ? "تحميل الدليل التقني"
+                      : lang === "fr"
+                        ? "Télécharger le Guide Technique"
+                        : "Download Technical Guide"}
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => {
+                      setSelectedItem(null);
+                      setIsChatOpen(true);
+                      setChatInput(
+                        lang === "tn"
+                          ? `نحب نعرف أكثر على ${selectedItem.title}.`
+                          : lang === "fr"
+                            ? `Je veux en savoir plus sur les exigences techniques pour ${selectedItem.title}.`
+                            : `I want to learn more about the technical requirements for ${selectedItem.title}.`,
+                      );
+                    }}
+                    className="p-5 glass text-olive-900 rounded-[24px] hover:bg-earth-100 transition-all"
+                  >
+                    <MessageSquare className="w-7 h-7" />
+                  </motion.button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Chat Bot Modal */}
+      <AnimatePresence>
+        {isChatOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsChatOpen(false)}
+              className="absolute inset-0 bg-olive-900/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 40, filter: "blur(10px)" }}
+              animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
+              exit={{ opacity: 0, scale: 0.9, y: 40, filter: "blur(10px)" }}
+              className="relative w-full max-w-[500px] h-full max-h-[700px] bg-white rounded-[40px] shadow-2xl border border-white/40 flex flex-col overflow-hidden"
+            >
+              <div className="p-6 bg-olive-900 text-white flex justify-between items-center shrink-0">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center">
+                    <Sprout className="w-7 h-7 text-olive-400" />
+                  </div>
+                  <div>
+                    <div className="font-serif font-bold text-lg">
+                      {t.expertName}
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
+                      <div className="text-[10px] font-bold uppercase tracking-widest opacity-60">
+                        {t.expertStatus}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setIsChatOpen(false)}
+                  className="p-2 hover:bg-white/10 rounded-xl transition-colors"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+              <div className="flex-grow overflow-y-auto p-6 space-y-6 bg-earth-50/30 custom-scrollbar">
+                {chatMessages.length === 0 && (
+                  <div className="text-center py-16">
+                    <motion.div
+                      animate={{ y: [0, -10, 0] }}
+                      transition={{ duration: 3, repeat: Infinity }}
+                      className="w-20 h-20 bg-olive-100 rounded-3xl flex items-center justify-center mx-auto mb-6 text-olive-600"
+                    >
+                      <MessageSquare className="w-10 h-10" />
+                    </motion.div>
+                    <h4 className="text-xl font-serif font-bold text-olive-900 mb-2 text-balance">
+                      {t.consult}
+                    </h4>
+                    <p className="text-sm text-olive-800/60 px-12 leading-relaxed mb-8">
+                      {t.chatIntro}
+                    </p>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => fileInputRef.current?.click()}
+                      className="px-8 py-4 bg-green-600 text-white rounded-2xl font-bold shadow-xl shadow-green-100 flex items-center gap-2 mx-auto"
+                    >
+                      <Camera className="w-5 h-5" />
+                      {t.scanYourPlant}
+                    </motion.button>
+                  </div>
+                )}
+                {chatMessages.map((msg, i) => (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    key={i}
+                    className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                  >
+                    <div className={`max-w-[85%] space-y-3`}>
+                      {msg.image && (
+                        <div className="rounded-2xl overflow-hidden shadow-md border-2 border-white">
+                          <img
+                            src={msg.image}
+                            alt="Uploaded"
+                            className="max-w-full h-auto"
+                          />
+                        </div>
+                      )}
+                      <div
+                        className={`p-4 rounded-[24px] shadow-sm ${msg.role === "user" ? "bg-olive-900 text-white rounded-tr-none" : "bg-white text-olive-900 border border-earth-100 rounded-tl-none"}`}
+                      >
+                        <div className="markdown-body">
+                          <ReactMarkdown>{msg.content}</ReactMarkdown>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+                {isTyping && (
+                  <div className="flex justify-start">
+                    <div className="bg-white p-4 rounded-[24px] shadow-sm border border-earth-100 rounded-tl-none">
+                      <div className="flex gap-1.5">
+                        <motion.div
+                          animate={{ scale: [1, 1.5, 1] }}
+                          transition={{ repeat: Infinity, duration: 1 }}
+                          className="w-1.5 h-1.5 bg-olive-300 rounded-full"
+                        />
+                        <motion.div
+                          animate={{ scale: [1, 1.5, 1] }}
+                          transition={{
+                            repeat: Infinity,
+                            duration: 1,
+                            delay: 0.2,
+                          }}
+                          className="w-1.5 h-1.5 bg-olive-300 rounded-full"
+                        />
+                        <motion.div
+                          animate={{ scale: [1, 1.5, 1] }}
+                          transition={{
+                            repeat: Infinity,
+                            duration: 1,
+                            delay: 0.4,
+                          }}
+                          className="w-1.5 h-1.5 bg-olive-300 rounded-full"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {quotaExceeded && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="p-6 bg-amber-50 border border-amber-200 rounded-3xl flex flex-col items-center text-center gap-4"
+                  >
+                    <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center text-amber-600">
+                      <AlertCircle className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h5 className="font-bold text-amber-900">
+                        {t.quotaExceeded}
+                      </h5>
+                      <p className="text-xs text-amber-800/70 mt-1">
+                        {t.quotaExceededDesc}
+                      </p>
+                    </div>
+                    <button
+                      onClick={handleSelectKey}
+                      className="w-full py-3 bg-amber-600 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-amber-700 transition-colors"
+                    >
+                      <Key className="w-4 h-4" />
+                      {t.selectApiKey}
+                    </button>
+                  </motion.div>
+                )}
+                <div ref={chatEndRef} />
+              </div>
+              <div className="px-6 pb-2 shrink-0">
+                <AnimatePresence>
+                  {selectedImage && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      className="relative w-20 h-20 rounded-xl overflow-hidden border-2 border-olive-500"
+                    >
+                      <img
+                        src={selectedImage}
+                        alt="Preview"
+                        className="w-full h-full object-cover"
+                      />
+                      <button
+                        onClick={() => setSelectedImage(null)}
+                        className="absolute top-1 right-1 bg-olive-900 text-white p-1 rounded-full"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+              <form
+                onSubmit={handleSendMessage}
+                className="p-6 bg-white border-t border-earth-100 flex gap-3 shrink-0"
+              >
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="p-4 bg-earth-100 text-olive-600 rounded-2xl hover:bg-earth-200 transition-colors shrink-0"
+                >
+                  <Camera className="w-6 h-6" />
+                </button>
+                <input
+                  type="text"
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  placeholder={t.chatPlaceholder}
+                  className="flex-grow px-6 py-4 bg-earth-100 border-none rounded-2xl text-sm font-medium focus:ring-2 focus:ring-olive-500 transition-all min-w-0"
+                />
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  type="submit"
+                  disabled={!chatInput.trim() && !selectedImage}
+                  className="p-4 bg-olive-900 text-white rounded-2xl shadow-lg shadow-olive-100 hover:bg-olive-800 transition-colors shrink-0 disabled:opacity-50"
+                >
+                  <Send className="w-6 h-6" />
+                </motion.button>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Floating Chat Trigger */}
+      <div className="fixed bottom-6 right-6 sm:bottom-10 sm:right-10 z-50">
+        <motion.button
+          whileHover={{ scale: 1.1, rotate: 5 }}
+          whileTap={{ scale: 0.9 }}
+          onClick={() => setIsChatOpen(!isChatOpen)}
+          className={`w-20 h-20 rounded-[28px] flex items-center justify-center shadow-2xl transition-all ${isChatOpen ? "bg-white text-olive-900" : "bg-olive-900 text-white"}`}
+        >
+          {isChatOpen ? (
+            <X className="w-8 h-8" />
+          ) : (
+            <MessageSquare className="w-8 h-8" />
+          )}
+        </motion.button>
+      </div>
+
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleImageUpload}
+        accept="image/*"
+        capture="environment"
+        className="hidden"
+      />
+      <input
+        type="file"
+        ref={uploadInputRef}
+        onChange={handleImageUpload}
+        accept="image/*"
+        className="hidden"
+      />
     </div>
   );
 }
