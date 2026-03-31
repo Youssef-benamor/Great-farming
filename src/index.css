@@ -1,11 +1,11 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Inter:wght@100..900&family=JetBrains+Mono:wght@100..800&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Inter:wght@100..900&family=JetBrains+Mono:wght@100..800&display=swap");
 
 @theme {
   --font-serif: "Cormorant Garamond", serif;
   --font-sans: "Inter", sans-serif;
   --font-mono: "JetBrains Mono", monospace;
-  
+
   --color-earth-50: #fdfcfb;
   --color-earth-100: #f7f3f0;
   --color-earth-200: #eee4dc;
@@ -16,7 +16,7 @@
   --color-earth-700: #8a5e46;
   --color-earth-800: #714d3a;
   --color-earth-900: #5d4031;
-  
+
   --color-olive-50: #f6f7f2;
   --color-olive-100: #ecefe5;
   --color-olive-200: #d9dfcc;
@@ -27,7 +27,7 @@
   --color-olive-700: #4e573a;
   --color-olive-800: #3e452f;
   --color-olive-900: #353b2a;
-  
+
   --color-sand-50: #fffbf0;
   --color-sand-100: #fef1d2;
   --color-sand-200: #fce3a4;
@@ -37,11 +37,19 @@
 }
 
 @layer base {
-  body {
+  html,
+  body,
+  #root {
     @apply bg-earth-50 text-olive-900 font-sans selection:bg-olive-200 selection:text-olive-900 overflow-x-hidden;
+    width: 100%;
+    position: relative;
   }
 
-  h1, h2, h3, h4, .serif {
+  h1,
+  h2,
+  h3,
+  h4,
+  .serif {
     @apply font-serif;
   }
 
@@ -54,7 +62,7 @@
   .glass {
     @apply bg-white/40 backdrop-blur-xl border border-white/20;
   }
-  
+
   .glass-dark {
     @apply bg-olive-900/40 backdrop-blur-xl border border-white/10;
   }
@@ -74,9 +82,15 @@
 
 /* Custom animations */
 @keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-  100% { transform: translateY(0px); }
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
 }
 
 .animate-float {
@@ -88,7 +102,9 @@
   @apply text-olive-800/80 leading-relaxed space-y-4;
 }
 
-.markdown-body h1, .markdown-body h2, .markdown-body h3 {
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3 {
   @apply text-olive-900 font-bold mt-6 mb-2;
 }
 
@@ -107,4 +123,3 @@
 .markdown-body code {
   @apply bg-earth-100 px-1.5 py-0.5 rounded font-mono text-xs text-olive-700;
 }
-
