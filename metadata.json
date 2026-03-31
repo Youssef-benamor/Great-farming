@@ -1,0 +1,5 @@
+{
+  "name": "Great Farming",
+  "description": "Great Farming is Tunisia's premier digital agriculture platform, offering AI-powered plant diagnosis, real-time market prices, and modern farming guides for olive, citrus, and cereal growers.",
+  "requestFramePermissions": ["geolocation", "camera"]
+}
