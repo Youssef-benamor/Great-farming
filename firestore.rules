@@ -2,50 +2,6 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ===============================================================
-    // Assumed Data Model
-    // ===============================================================
-    //
-    // Collection: users
-    // Document ID: {userId} (UID)
-    // Fields:
-    //   - uid: string (required, immutable)
-    //   - displayName: string (required, min 1, max 50)
-    //   - photoURL: string (optional, URL)
-    //   - reputation: number (optional, default 0)
-    //   - bio: string (optional, max 500)
-    //   - createdAt: timestamp (required, immutable)
-    //
-    // Collection: posts
-    // Document ID: {postId}
-    // Fields:
-    //   - id: string (required)
-    //   - title: string (required, min 1, max 200)
-    //   - content: string (required, min 1, max 5000)
-    //   - category: string (required, enum: ['olive', 'citrus', 'cereal', 'general'])
-    //   - authorId: string (required, immutable)
-    //   - authorName: string (required, max 50)
-    //   - authorPhoto: string (optional, URL)
-    //   - createdAt: timestamp (required, immutable)
-    //   - likes: number (optional, default 0)
-    //
-    // Subcollection: posts/{postId}/comments
-    // Document ID: {commentId}
-    // Fields:
-    //   - id: string (required)
-    //   - postId: string (required, immutable)
-    //   - content: string (required, min 1, max 1000)
-    //   - authorId: string (required, immutable)
-    //   - authorName: string (required, max 50)
-    //   - authorPhoto: string (optional, URL)
-    //   - createdAt: timestamp (required, immutable)
-    //
-    // ===============================================================
-
-    // ===============================================================
-    // Helper Functions
-    // ===============================================================
-
     function isAuthenticated() {
       return request.auth != null;
     }
@@ -56,96 +12,102 @@ service cloud.firestore {
 
     function isAdmin() {
       return isAuthenticated() &&
-        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
-          (request.auth.token.email == "youssefbenamor1234@gmail.com" && request.auth.token.email_verified == true));
-    }
-
-    function isValidEmail(email) {
-      return email is string &&
-        email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+        (
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
+          || request.auth.token.email == "youssefbenamor1234@gmail.com"
+        );
     }
 
     function isValidUrl(url) {
-      return url is string &&
-        (url.matches("^https://.*") || url.matches("^http://.*"));
+      return url is string && url.matches('^https?://');
     }
 
     function hasRequiredFields(fields) {
       return request.resource.data.keys().hasAll(fields);
     }
 
-    function hasOnlyAllowedFields(fields) {
-      return request.resource.data.keys().hasOnly(fields);
-    }
-
-    // ===============================================================
-    // Domain Validators
-    // ===============================================================
-
     function isValidUser(data) {
       return hasRequiredFields(['uid', 'displayName', 'createdAt']) &&
-             data.uid == request.auth.uid &&
-             data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 50 &&
-             (!('photoURL' in data) || isValidUrl(data.photoURL)) &&
-             (!('bio' in data) || (data.bio is string && data.bio.size() <= 500)) &&
-             (!('reputation' in data) || data.reputation is number) &&
-             data.createdAt is timestamp;
+        data.uid == request.auth.uid &&
+        data.displayName is string &&
+        data.displayName.size() >= 1 &&
+        data.displayName.size() <= 50 &&
+        (!('photoURL' in data) || isValidUrl(data.photoURL)) &&
+        (!('bio' in data) || (data.bio is string && data.bio.size() <= 500)) &&
+        (!('reputation' in data) || data.reputation is number) &&
+        data.createdAt is timestamp;
     }
 
     function isValidPost(data) {
       return hasRequiredFields(['title', 'content', 'category', 'authorId', 'authorName', 'createdAt']) &&
-             data.title is string && data.title.size() >= 1 && data.title.size() <= 200 &&
-             data.content is string && data.content.size() >= 1 && data.content.size() <= 5000 &&
-             data.category in ['olive', 'citrus', 'cereal', 'general'] &&
-             data.authorId == request.auth.uid &&
-             data.authorName is string && data.authorName.size() <= 50 &&
-             (!('authorPhoto' in data) || isValidUrl(data.authorPhoto)) &&
-             data.createdAt is timestamp &&
-             (!('likes' in data) || data.likes is number);
+        data.title is string &&
+        data.title.size() >= 1 &&
+        data.title.size() <= 200 &&
+        data.content is string &&
+        data.content.size() >= 1 &&
+        data.content.size() <= 5000 &&
+        data.category in ['olive', 'citrus', 'cereal', 'general'] &&
+        data.authorId == request.auth.uid &&
+        data.authorName is string &&
+        data.authorName.size() <= 50 &&
+        (!('authorPhoto' in data) || isValidUrl(data.authorPhoto)) &&
+        data.createdAt is timestamp &&
+        (!('likes' in data) || data.likes is number);
     }
 
     function isValidComment(data) {
       return hasRequiredFields(['postId', 'content', 'authorId', 'authorName', 'createdAt']) &&
-             data.postId is string &&
-             data.content is string && data.content.size() >= 1 && data.content.size() <= 1000 &&
-             data.authorId == request.auth.uid &&
-             data.authorName is string && data.authorName.size() <= 50 &&
-             (!('authorPhoto' in data) || isValidUrl(data.authorPhoto)) &&
-             data.createdAt is timestamp;
+        data.postId is string &&
+        data.content is string &&
+        data.content.size() >= 1 &&
+        data.content.size() <= 1000 &&
+        data.authorId == request.auth.uid &&
+        data.authorName is string &&
+        data.authorName.size() <= 50 &&
+        (!('authorPhoto' in data) || isValidUrl(data.authorPhoto)) &&
+        data.createdAt is timestamp;
     }
 
-    // ===============================================================
-    // Match Rules
-    // ===============================================================
-
+    // ================= USERS =================
     match /users/{userId} {
       allow read: if isAuthenticated();
       allow create: if isOwner(userId) && isValidUser(request.resource.data);
-      allow update: if (isOwner(userId) && isValidUser(request.resource.data) && request.resource.data.createdAt == resource.data.createdAt) || isAdmin();
+      allow update: if (isOwner(userId) && isValidUser(request.resource.data)) || isAdmin();
       allow delete: if isAdmin();
     }
 
+    // ================= POSTS =================
     match /posts/{postId} {
-      allow read: if isAuthenticated();
+
+      // 🔓 Public read (even without login)
+      allow read: if true;
+
       allow create: if isAuthenticated() && isValidPost(request.resource.data);
+
       allow update: if isAuthenticated() && (
-        (isOwner(resource.data.authorId) && isValidPost(request.resource.data) && request.resource.data.createdAt == resource.data.createdAt) ||
         isAdmin() ||
-        // Allow anyone to update likes only
-        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes']) && request.resource.data.likes is number)
+        (isOwner(resource.data.authorId) && isValidPost(request.resource.data))
       );
+
       allow delete: if isOwner(resource.data.authorId) || isAdmin();
 
+      // ================= COMMENTS =================
       match /comments/{commentId} {
-        allow read: if isAuthenticated();
+
+        // 🔓 Public read
+        allow read: if true;
+
         allow create: if isAuthenticated() && isValidComment(request.resource.data);
-        allow update: if (isOwner(resource.data.authorId) && isValidComment(request.resource.data) && request.resource.data.createdAt == resource.data.createdAt) || isAdmin();
+
+        allow update: if isAdmin() ||
+          (isOwner(resource.data.authorId) && isValidComment(request.resource.data));
+
         allow delete: if isOwner(resource.data.authorId) || isAdmin();
       }
     }
 
-    // Default deny
-    match /{path=**} {
+    // ================= DEFAULT DENY =================
+    match /{document=**} {
       allow read, write: if false;
     }
   }
