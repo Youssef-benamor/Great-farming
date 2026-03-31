@@ -79,9 +79,9 @@ service cloud.firestore {
     // ================= POSTS =================
     match /posts/{postId} {
 
-      // 🔓 Public read (even without login)
       allow read: if true;
 
+      // ⚠️ IMPORTANT: create rule
       allow create: if isAuthenticated() && isValidPost(request.resource.data);
 
       allow update: if isAuthenticated() && (
@@ -94,7 +94,6 @@ service cloud.firestore {
       // ================= COMMENTS =================
       match /comments/{commentId} {
 
-        // 🔓 Public read
         allow read: if true;
 
         allow create: if isAuthenticated() && isValidComment(request.resource.data);
