@@ -220,11 +220,9 @@ export default function App() {
         }
       } catch (err) {
         console.error("Weather fetch failed:", err);
-        // Fallback to Tunis default if fetch fails for current location
         if (locationName === "Current Location") {
           fetchWeather(36.8065, 10.1815, "Tunis");
         } else {
-          // Final fallback to static data if even Tunis fetch fails
           setWeather({
             temp: 22,
             condition: "0",
@@ -247,12 +245,12 @@ export default function App() {
             "Geolocation denied or failed, using default (Tunis)",
             error,
           );
-          fetchWeather(36.8065, 10.1815, "Tunis"); // Default to Tunis
+          fetchWeather(36.8065, 10.1815, "Tunis");
         },
         { timeout: 5000 },
       );
     } else {
-      fetchWeather(36.8065, 10.1815, "Tunis"); // Default to Tunis
+      fetchWeather(36.8065, 10.1815, "Tunis");
     }
   }, []);
 
@@ -273,7 +271,7 @@ export default function App() {
       const reader = new FileReader();
       reader.onloadend = () => {
         setSelectedImage(reader.result as string);
-        setIsChatOpen(true); // Open chat to show preview
+        setIsChatOpen(true);
       };
       reader.readAsDataURL(file);
     }
@@ -332,7 +330,6 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex flex-col selection:bg-olive-200 overflow-x-hidden">
-      {/* Navigation */}
       <motion.nav
         style={{ backgroundColor: `rgba(253, 252, 251, ${navOpacity.get()})` }}
         className="fixed top-0 w-full z-40 backdrop-blur-md border-b border-earth-200 transition-colors"
@@ -500,7 +497,6 @@ export default function App() {
           </div>
         </div>
 
-        {/* Mobile Menu */}
         <AnimatePresence>
           {isMobileMenuOpen && (
             <motion.div
@@ -633,7 +629,12 @@ export default function App() {
           <Route
             path="/forum"
             element={
-              <Forum lang={lang} user={user} isAuthReady={isAuthReady} />
+              <Forum
+                lang={lang}
+                user={user}
+                isAuthReady={isAuthReady}
+                userProfile={userProfile}
+              />
             }
           />
           <Route
@@ -650,7 +651,6 @@ export default function App() {
         </Routes>
       </main>
 
-      {/* Footer */}
       <footer className="bg-earth-100 py-20 border-t border-earth-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-4 gap-12 mb-16">
@@ -884,12 +884,10 @@ export default function App() {
                 </a>
               </p>
             </div>
-            <div className="flex gap-8"></div>
           </div>
         </div>
       </footer>
 
-      {/* Item Modal */}
       <AnimatePresence>
         {selectedItem && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 lg:p-8">
@@ -1057,7 +1055,6 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      {/* Chat Bot Modal */}
       <AnimatePresence>
         {isChatOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
@@ -1249,7 +1246,6 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      {/* Floating Chat Trigger */}
       <div className="fixed bottom-6 right-6 sm:bottom-10 sm:right-10 z-40">
         <motion.button
           whileHover={{ scale: 1.1, rotate: 5 }}
@@ -1267,7 +1263,6 @@ export default function App() {
         </motion.button>
       </div>
 
-      {/* Hidden File Input for Camera */}
       <input
         type="file"
         ref={fileInputRef}
@@ -1277,7 +1272,6 @@ export default function App() {
         className="hidden"
       />
 
-      {/* Hidden File Input for Device Upload */}
       <input
         type="file"
         ref={uploadInputRef}
