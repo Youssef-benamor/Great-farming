@@ -104,7 +104,7 @@ export default function Home({
         </div>
         
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid grid-cols-1 md:grid-cols-12 auto-rows-min gap-4 lg:gap-6 items-start">
+          <div className="grid grid-cols-1 md:grid-cols-12 auto-rows-min gap-4 lg:gap-6 items-start grid-flow-row-dense">
             
             {/* Main Greeting Panel (Bento Span 8) */}
             <motion.div 
@@ -131,7 +131,7 @@ export default function Home({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
-              className="md:col-span-6 lg:col-span-4 glass rounded-[40px] p-8 min-h-[400px] flex flex-col gap-4 border border-earth-200/50"
+              className="md:col-span-6 lg:col-span-4 glass rounded-[40px] p-6 sm:p-8 min-h-[400px] flex flex-col gap-4 border border-earth-200/50"
             >
               <div className="flex-grow flex flex-col gap-4">
                 <motion.button 
@@ -218,12 +218,12 @@ export default function Home({
               <p className="text-lg text-olive-800/60 leading-relaxed">{t.indexSubtitle}</p>
             </div>
             
-            <div className="flex bg-earth-100 p-1.5 rounded-2xl self-start md:self-auto">
+            <div className="flex flex-wrap bg-earth-100 p-1.5 rounded-2xl self-start md:self-auto gap-1">
               {(['all', 'tool', 'method', 'treatment'] as const).map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setActiveCategory(cat)}
-                  className={`px-8 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${
+                  className={`px-4 sm:px-8 py-3 rounded-xl text-[10px] sm:text-xs font-bold uppercase tracking-widest transition-all whitespace-nowrap flex-1 text-center ${
                     activeCategory === cat 
                        ? 'bg-white text-olive-900 shadow-xl' 
                       : 'text-olive-900/40 hover:text-olive-900'
@@ -286,7 +286,7 @@ export default function Home({
       {/* Soil & Water Section */}
       <section className="py-32 bg-earth-100 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-24 items-center">
+          <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
             <div className="relative">
               <div className="absolute -top-20 -left-20 w-64 h-64 bg-olive-200/30 rounded-full blur-3xl" />
               <h2 className="text-5xl font-serif font-bold text-olive-900 mb-8 leading-tight">{t.soilTitle}</h2>

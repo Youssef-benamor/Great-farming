@@ -61,7 +61,7 @@ export const WeatherWidget = ({ weather, lang }: WeatherWidgetProps) => {
 
   if (!weather) {
     return (
-      <div className="bg-white/80 backdrop-blur-xl p-6 rounded-[32px] border border-earth-200 shadow-xl flex items-center gap-4 min-w-[280px] sm:min-w-[320px]">
+      <div className="bg-white/80 backdrop-blur-xl p-6 rounded-[32px] border border-earth-200 shadow-xl flex items-center gap-4 w-full">
         <div className="w-12 h-12 bg-earth-100 rounded-2xl animate-pulse flex items-center justify-center">
           <Cloud className="w-6 h-6 text-earth-300" />
         </div>
@@ -77,7 +77,7 @@ export const WeatherWidget = ({ weather, lang }: WeatherWidgetProps) => {
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white/80 backdrop-blur-xl p-8 rounded-[40px] border border-earth-200/50 shadow-xl flex flex-col justify-between h-full min-h-[300px] relative overflow-hidden group"
+      className="bg-white/80 backdrop-blur-xl p-6 sm:p-8 rounded-[40px] border border-earth-200/50 shadow-xl flex flex-col justify-between h-full min-h-[300px] relative overflow-hidden group"
     >
       <div className="absolute top-[-5%] right-[-5%] p-2 opacity-5 text-olive-600 group-hover:opacity-10 transition-opacity">
         <Wind className="w-48 h-48 -rotate-12" />

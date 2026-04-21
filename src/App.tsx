@@ -434,7 +434,7 @@ export default function App() {
 
                 <div className="px-4">
                   <div className="text-xs font-bold uppercase tracking-widest text-olive-400 mb-4">Language / Langue / اللغة</div>
-                  <div className="flex items-center bg-earth-100 rounded-2xl p-1.5 w-fit">
+                  <div className="flex flex-wrap items-center bg-earth-100 rounded-2xl p-1.5 gap-1 w-full max-w-sm">
                     {(['en', 'fr', 'tn'] as const).map(l => (
                       <button
                         key={l}
@@ -442,7 +442,7 @@ export default function App() {
                           setLang(l);
                           setIsMobileMenuOpen(false);
                         }}
-                        className={`px-6 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${
+                        className={`flex-1 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${
                           lang === l ? 'bg-white text-olive-900 shadow-sm' : 'text-olive-400 hover:text-olive-900'
                         }`}
                       >
@@ -561,7 +561,7 @@ export default function App() {
                   <X className="w-6 h-6" />
                 </button>
               </div>
-              <div className="lg:w-1/2 p-10 lg:p-16 overflow-y-auto custom-scrollbar">
+              <div className="lg:w-1/2 p-6 sm:p-10 lg:p-16 overflow-y-auto custom-scrollbar">
                 <div className="hidden lg:flex justify-end mb-8">
                   <button 
                     onClick={() => setSelectedItem(null)}
@@ -581,7 +581,7 @@ export default function App() {
 
                 <h2 className="text-5xl lg:text-6xl font-serif font-bold text-olive-900 mb-8 leading-tight">{selectedItem.title}</h2>
                 
-                <div className="grid grid-cols-2 gap-8 mb-12">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8 mb-12">
                   <div className="bg-earth-50 p-6 rounded-3xl">
                     <Calendar className="w-6 h-6 text-olive-600 mb-3" />
                     <div className="text-[10px] font-bold uppercase tracking-widest text-olive-400 mb-1">{lang === 'tn' ? 'أحسن وقت' : lang === 'fr' ? 'Meilleure Saison' : 'Best Season'}</div>

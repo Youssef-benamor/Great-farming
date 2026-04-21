@@ -143,7 +143,7 @@ export default function Chat({
                   }
                   setIsTyping(false);
                 }}
-                className="px-8 py-4 bg-olive-100 text-olive-900 rounded-2xl font-bold flex items-center gap-2 mx-auto"
+                className="px-8 py-4 mt-4 bg-olive-100 text-olive-900 rounded-2xl font-bold flex items-center gap-2 mx-auto"
               >
                 <FlaskConical className="w-5 h-5" />
                 Try Sample Analysis
