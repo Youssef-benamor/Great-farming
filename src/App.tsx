@@ -281,7 +281,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row selection:bg-olive-600 selection:text-white overflow-x-hidden bg-earth-50">
+    <div className="min-h-screen w-full flex flex-col md:flex-row selection:bg-olive-600 selection:text-white overflow-x-hidden bg-earth-50">
       
       {/* Floating Desktop Sidebar (Dashboard Aesthetic) */}
       <motion.aside 
@@ -466,7 +466,7 @@ export default function App() {
           )}
         </AnimatePresence>
 
-        <div className="md:pl-24 lg:pl-80 flex-1 flex flex-col min-h-screen relative z-10 min-w-0 transition-all duration-300">
+        <div className="md:pl-24 lg:pl-80 flex-1 flex flex-col min-h-screen relative z-10 w-full min-w-0 transition-all duration-300">
           <Routes>
           <Route path="/" element={
             <Home 
