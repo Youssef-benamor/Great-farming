@@ -163,8 +163,7 @@ export default function App() {
             forecast
           });
         }
-      } catch (err) {
-        console.error("Weather fetch failed:", err);
+      } catch (err: any) {
         // Fallback to Tunis default if fetch fails for current location
         if (locationName === "Current Location") {
           fetchWeather(36.8065, 10.1815, "Tunis");
@@ -467,7 +466,7 @@ export default function App() {
           )}
         </AnimatePresence>
 
-        <div className="md:ml-24 lg:ml-80 flex-1 flex flex-col min-h-screen relative z-10 w-full overflow-x-hidden transition-all duration-300">
+        <div className="md:pl-24 lg:pl-80 flex-1 flex flex-col min-h-screen relative z-10 min-w-0 transition-all duration-300">
           <Routes>
           <Route path="/" element={
             <Home 

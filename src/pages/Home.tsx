@@ -111,19 +111,25 @@ export default function Home({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease: "easeOut" }}
-              className="md:col-span-12 lg:col-span-8 glass-dark p-10 sm:p-16 rounded-[40px] flex flex-col justify-end min-h-[400px] border border-white/5"
+              className="md:col-span-12 lg:col-span-8 bg-gradient-to-br from-olive-900/90 via-olive-800/80 to-olive-600/60 backdrop-blur-3xl p-10 sm:p-16 rounded-[40px] flex flex-col justify-end min-h-[400px] border border-white/20 shadow-2xl relative overflow-hidden"
             >
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-olive-600/20 text-olive-300 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] mb-8 w-fit backdrop-blur-md">
-                <MapPin className="w-3 h-3" />
-                {t.hubLabel}
+              {/* Radial gloss over the gradient */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+              <div className="absolute -top-40 -right-40 w-80 h-80 bg-green-400/20 rounded-full blur-[80px]" />
+              
+              <div className="relative z-10">
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/20 text-green-100 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] mb-8 w-fit backdrop-blur-md border border-white/10">
+                  <MapPin className="w-3 h-3" />
+                  {t.hubLabel}
+                </div>
+                <h1 className="text-4xl sm:text-6xl lg:text-7xl font-serif font-extrabold text-white leading-[1.1] mb-6 tracking-tighter">
+                  {t.heroTitle.split(' ')[0]} <br />
+                  <span className="text-green-200 italic font-mono tracking-tight">{t.heroTitle.split(' ').slice(1).join(' ')}</span>
+                </h1>
+                <p className="text-lg text-green-50/80 max-w-xl leading-relaxed text-balance">
+                  {t.heroSubtitle}
+                </p>
               </div>
-              <h1 className="text-4xl sm:text-6xl lg:text-7xl font-serif font-extrabold text-white leading-[1.1] mb-6 tracking-tighter">
-                {t.heroTitle.split(' ')[0]} <br />
-                <span className="text-sand-300 italic font-mono tracking-tight">{t.heroTitle.split(' ').slice(1).join(' ')}</span>
-              </h1>
-              <p className="text-lg text-white/50 max-w-xl leading-relaxed text-balance">
-                {t.heroSubtitle}
-              </p>
             </motion.div>
 
             {/* Quick Actions Panel (Bento Span 4) */}
