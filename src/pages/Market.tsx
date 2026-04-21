@@ -31,7 +31,7 @@ export default function Market({ lang }: MarketProps) {
   const t = TRANSLATIONS[lang];
 
   return (
-    <div className="min-h-screen pt-24 pb-12 px-4 bg-earth-50">
+    <div className="min-h-screen pt-24 pb-12 px-4 bg-earth-50 overflow-x-hidden">
       <div className="max-w-7xl mx-auto">
         {/* Market Prices Overview */}
         <section className="mb-20">

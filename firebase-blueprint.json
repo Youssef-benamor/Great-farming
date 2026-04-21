@@ -26,6 +26,7 @@
         "authorId": { "type": "string", "description": "UID of the post author." },
         "authorName": { "type": "string", "description": "Display name of the author." },
         "authorPhoto": { "type": "string", "description": "Photo URL of the author." },
+        "image": { "type": "string", "description": "Optional image attached to the post." },
         "createdAt": { "type": "string", "format": "date-time", "description": "When the post was created." },
         "likes": { "type": "integer", "description": "Number of likes on the post." }
       },

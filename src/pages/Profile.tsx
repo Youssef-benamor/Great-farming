@@ -101,7 +101,7 @@ export default function Profile({ lang, user, isAuthReady, userProfile }: Profil
   }
 
   return (
-    <div className="min-h-screen pt-32 pb-20 px-4 bg-earth-50 selection:bg-olive-200">
+    <div className="min-h-screen pt-32 pb-20 px-4 bg-earth-50 selection:bg-olive-200 overflow-x-hidden">
       <div className="max-w-6xl mx-auto">
         <div className="grid lg:grid-cols-3 gap-12">
           {/* Profile Sidebar */}

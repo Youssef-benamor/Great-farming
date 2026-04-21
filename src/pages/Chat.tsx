@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { MessageSquare, Camera, FlaskConical, X, Send, Sprout, Plus } from 'lucide-react';
+import { MessageSquare, Camera, FlaskConical, X, Send, Sprout, Plus, AlertCircle, Key } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { TRANSLATIONS } from '../constants';
 import { askFarmingExpert } from '../services/geminiService';
@@ -18,6 +18,9 @@ interface ChatProps {
   fileInputRef: React.RefObject<HTMLInputElement>;
   uploadInputRef: React.RefObject<HTMLInputElement>;
   chatEndRef: React.RefObject<HTMLDivElement>;
+  quotaExceeded: boolean;
+  setQuotaExceeded: (exceeded: boolean) => void;
+  handleSelectKey: () => Promise<void>;
 }
 
 export default function Chat({
@@ -32,7 +35,10 @@ export default function Chat({
   setChatInput,
   fileInputRef,
   uploadInputRef,
-  chatEndRef
+  chatEndRef,
+  quotaExceeded,
+  setQuotaExceeded,
+  handleSelectKey
 }: ChatProps) {
   const t = TRANSLATIONS[lang];
 
@@ -57,12 +63,22 @@ export default function Chat({
     }
 
     const aiResponse = await askFarmingExpert(userMessage, imageBase64, mimeType);
-    setChatMessages(prev => [...prev, { role: 'ai', content: aiResponse }]);
+    
+    if (aiResponse === "QUOTA_EXCEEDED") {
+      setQuotaExceeded(true);
+      setChatMessages(prev => [...prev, { 
+        role: 'ai', 
+        content: t.quotaExceededDesc 
+      }]);
+    } else {
+      setChatMessages(prev => [...prev, { role: 'ai', content: aiResponse }]);
+    }
+    
     setIsTyping(false);
   };
 
   return (
-    <div className="min-h-screen pt-24 pb-12 px-4 bg-earth-50 flex flex-col items-center">
+    <div className="min-h-screen pt-24 pb-12 px-4 bg-earth-50 flex flex-col items-center overflow-x-hidden">
       <div className="w-full max-w-4xl bg-white rounded-[40px] shadow-2xl border border-earth-100 flex flex-col overflow-hidden h-[80vh]">
         <div className="p-6 bg-olive-900 text-white flex justify-between items-center">
           <div className="flex items-center gap-4">
@@ -119,7 +135,12 @@ export default function Chat({
                   setChatMessages([{ role: 'user', content: "Analyze this plant image for pests.", image: sampleImage }]);
                   setIsTyping(true);
                   const aiResponse = await askFarmingExpert("Analyze this plant image for pests.", "", "");
-                  setChatMessages(prev => [...prev, { role: 'ai', content: aiResponse }]);
+                  if (aiResponse === "QUOTA_EXCEEDED") {
+                    setChatMessages(prev => [...prev, { role: 'ai', content: t.quotaExceededDesc }]);
+                    setQuotaExceeded(true);
+                  } else {
+                    setChatMessages(prev => [...prev, { role: 'ai', content: aiResponse }]);
+                  }
                   setIsTyping(false);
                 }}
                 className="px-8 py-4 bg-olive-100 text-olive-900 rounded-2xl font-bold flex items-center gap-2 mx-auto"
@@ -128,6 +149,28 @@ export default function Chat({
                 Try Sample Analysis
               </motion.button>
             </div>
+          )}
+          {quotaExceeded && (
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="p-8 bg-amber-50 border border-amber-200 rounded-[32px] flex flex-col items-center text-center gap-6 max-w-md mx-auto"
+            >
+              <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center text-amber-600">
+                <AlertCircle className="w-8 h-8" />
+              </div>
+              <div>
+                <h5 className="text-xl font-serif font-bold text-amber-900 mb-2">{t.quotaExceeded}</h5>
+                <p className="text-sm text-amber-800/70">{t.quotaExceededDesc}</p>
+              </div>
+              <button 
+                onClick={handleSelectKey}
+                className="w-full py-4 bg-amber-600 text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-amber-700 transition-colors shadow-lg shadow-amber-100"
+              >
+                <Key className="w-5 h-5" />
+                {t.selectApiKey}
+              </button>
+            </motion.div>
           )}
           {chatMessages.map((msg, i) => (
             <motion.div 

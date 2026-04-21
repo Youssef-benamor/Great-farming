@@ -105,6 +105,7 @@ service cloud.firestore {
              data.authorId == request.auth.uid &&
              data.authorName is string && data.authorName.size() <= 100 &&
              (!('authorPhoto' in data) || isValidUrl(data.authorPhoto)) &&
+             (!('image' in data) || (data.image is string && data.image.size() <= 800000)) &&
              data.createdAt is timestamp &&
              (!('likes' in data) || data.likes is number);
     }
@@ -131,7 +132,6 @@ service cloud.firestore {
     }
 
     match /posts/{postId} {
-      // FIX: Allow public read access to posts
       allow read: if true;
       allow create: if isAuthenticated() && isValidPost(request.resource.data);
       allow update: if isAuthenticated() && (
@@ -143,7 +143,6 @@ service cloud.firestore {
       allow delete: if isOwner(resource.data.authorId) || isAdmin();
 
       match /comments/{commentId} {
-        // FIX: Allow public read access to comments
         allow read: if true;
         allow create: if isAuthenticated() && isValidComment(request.resource.data);
         allow update: if (isOwner(resource.data.authorId) && isValidComment(request.resource.data) && request.resource.data.createdAt == resource.data.createdAt) || isAdmin();

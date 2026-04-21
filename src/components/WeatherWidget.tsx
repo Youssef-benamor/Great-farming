@@ -61,7 +61,7 @@ export const WeatherWidget = ({ weather, lang }: WeatherWidgetProps) => {
 
   if (!weather) {
     return (
-      <div className="bg-white/80 backdrop-blur-xl p-6 rounded-[32px] border border-earth-200 shadow-xl flex items-center gap-4 min-w-[240px]">
+      <div className="bg-white/80 backdrop-blur-xl p-6 rounded-[32px] border border-earth-200 shadow-xl flex items-center gap-4 min-w-[280px] sm:min-w-[320px]">
         <div className="w-12 h-12 bg-earth-100 rounded-2xl animate-pulse flex items-center justify-center">
           <Cloud className="w-6 h-6 text-earth-300" />
         </div>
@@ -77,45 +77,46 @@ export const WeatherWidget = ({ weather, lang }: WeatherWidgetProps) => {
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white/80 backdrop-blur-xl p-6 rounded-[32px] border border-earth-200 shadow-xl flex flex-col gap-6 min-w-[320px] relative overflow-hidden group"
+      className="bg-white/80 backdrop-blur-xl p-8 rounded-[40px] border border-earth-200/50 shadow-xl flex flex-col justify-between h-full min-h-[300px] relative overflow-hidden group"
     >
-      <div className="absolute top-0 right-0 p-2 opacity-5 group-hover:opacity-10 transition-opacity">
-        <Wind className="w-24 h-24 -rotate-12" />
+      <div className="absolute top-[-5%] right-[-5%] p-2 opacity-5 text-olive-600 group-hover:opacity-10 transition-opacity">
+        <Wind className="w-48 h-48 -rotate-12" />
       </div>
 
-      <div className="flex items-center gap-6">
-        <div className="relative z-10">
-          {getWeatherIcon(weather.condition)}
-        </div>
-
-        <div className="flex-grow relative z-10">
-          <div className="flex items-center gap-1.5 text-olive-400 mb-1">
+      <div className="relative z-10 flex flex-col gap-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1.5 px-3 py-1 bg-olive-50 text-olive-600 rounded-full w-fit mb-1">
             <MapPin className="w-3 h-3" />
             <span className="text-[10px] font-bold uppercase tracking-widest">
               {weather.location === "Current Location" ? t.currentLocation : 
                weather.location === "Tunis" ? t.tunis : weather.location}
             </span>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-serif font-bold text-olive-900">{Math.round(weather.temp)}°</span>
-            <span className="text-sm font-bold text-olive-800/60">{getWeatherDescription(weather.condition, lang)}</span>
+          <div className="flex gap-4 text-olive-400">
+            <div className="flex items-center gap-1.5 group-hover:text-olive-600 transition-colors">
+              <Droplets className="w-4 h-4" />
+              <span className="text-[10px] font-mono font-bold">{weather.humidity ?? 65}%</span>
+            </div>
+            <div className="flex items-center gap-1.5 group-hover:text-olive-600 transition-colors">
+              <Wind className="w-4 h-4" />
+              <span className="text-[10px] font-mono font-bold">{weather.windSpeed ?? 12} km/h</span>
+            </div>
           </div>
         </div>
 
-        <div className="flex flex-col gap-2 relative z-10">
-          <div className="flex items-center gap-2 text-olive-400">
-            <Droplets className="w-4 h-4" />
-            <span className="text-[10px] font-bold">{weather.humidity ?? 65}%</span>
+        <div className="flex items-center gap-6">
+          <div className="scale-125 origin-left">
+            {getWeatherIcon(weather.condition)}
           </div>
-          <div className="flex items-center gap-2 text-olive-400">
-            <Wind className="w-4 h-4" />
-            <span className="text-[10px] font-bold">{weather.windSpeed ?? 12} km/h</span>
+          <div className="flex flex-col">
+            <span className="text-6xl font-serif font-extrabold text-olive-900 tracking-tighter leading-none">{Math.round(weather.temp)}°</span>
+            <span className="text-sm font-bold text-olive-800/60 mt-2">{getWeatherDescription(weather.condition, lang)}</span>
           </div>
         </div>
       </div>
 
       {weather.forecast && weather.forecast.length > 0 && (
-        <div className="pt-4 border-t border-earth-100 grid grid-cols-3 gap-4 relative z-10">
+        <div className="mt-8 pt-6 border-t border-earth-200/50 grid grid-cols-3 gap-2 relative z-10">
           {weather.forecast.map((day, idx) => (
             <div key={idx} className="flex flex-col items-center gap-2">
               <span className="text-[10px] font-bold uppercase tracking-widest text-olive-400">
