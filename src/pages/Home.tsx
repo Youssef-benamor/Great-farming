@@ -111,7 +111,7 @@ export default function Home({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease: "easeOut" }}
-              className="md:col-span-12 lg:col-span-8 bg-gradient-to-br from-olive-900/90 via-olive-800/80 to-olive-600/60 backdrop-blur-3xl p-10 sm:p-16 rounded-[40px] flex flex-col justify-end min-h-[400px] border border-white/20 shadow-2xl relative overflow-hidden"
+              className="md:col-span-8 bg-gradient-to-br from-olive-900/90 via-olive-800/80 to-olive-600/60 backdrop-blur-3xl p-10 sm:p-16 rounded-[40px] flex flex-col justify-end min-h-[400px] border border-white/20 shadow-2xl relative overflow-hidden"
             >
               {/* Radial gloss over the gradient */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
@@ -137,7 +137,7 @@ export default function Home({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
-              className="md:col-span-6 lg:col-span-4 glass rounded-[40px] p-6 sm:p-8 min-h-[400px] flex flex-col gap-4 border border-earth-200/50"
+              className="md:col-span-4 glass rounded-[40px] p-6 sm:p-8 min-h-[400px] flex flex-col gap-4 border border-earth-200/50"
             >
               <div className="flex-grow flex flex-col gap-4">
                 <motion.button 
@@ -181,7 +181,7 @@ export default function Home({
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className="md:col-span-12 lg:col-span-8 relative aspect-[21/9] lg:aspect-auto lg:h-[300px] rounded-[40px] overflow-hidden group shadow-[0_16px_40px_-10px_rgba(0,0,0,0.2)]"
+              className="md:col-span-8 relative aspect-[21/9] lg:aspect-auto lg:h-[300px] rounded-[40px] overflow-hidden group shadow-[0_16px_40px_-10px_rgba(0,0,0,0.2)]"
             >
               <img 
                 src="https://thumbs.dreamstime.com/b/happy-multiracial-farmers-standing-tools-greenhouse-portrait-smiling-multicultural-male-female-290811884.jpg" 
@@ -207,7 +207,7 @@ export default function Home({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
-              className="md:col-span-6 lg:col-span-4"
+              className="md:col-span-4"
             >
               <WeatherWidget weather={weather} lang={lang} />
             </motion.div>
@@ -246,7 +246,7 @@ export default function Home({
               const isLarge = index % 5 === 0;
               const isMedium = index % 5 === 1 || index % 5 === 2;
               
-              const colSpan = isLarge ? 'md:col-span-12 lg:col-span-8' : 'md:col-span-6 lg:col-span-4';
+              const colSpan = isLarge ? 'md:col-span-8' : 'md:col-span-4';
               const aspectRatio = isLarge ? 'aspect-[21/9] lg:aspect-[16/7]' : 'aspect-[4/3]';
 
               return (
@@ -292,7 +292,7 @@ export default function Home({
       {/* Soil & Water Section */}
       <section className="py-32 bg-earth-100 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+          <div className="grid md:grid-cols-2 gap-12 md:gap-16 lg:gap-24 items-center">
             <div className="relative">
               <div className="absolute -top-20 -left-20 w-64 h-64 bg-olive-200/30 rounded-full blur-3xl" />
               <h2 className="text-5xl font-serif font-bold text-olive-900 mb-8 leading-tight">{t.soilTitle}</h2>
